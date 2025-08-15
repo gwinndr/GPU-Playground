@@ -28,6 +28,7 @@ public:
    void Sync(void);
 
    // delete copy/move (rule of 5)
+   // TODO: Implement the move operator (useful for copy-ellision, etc.)
    tcCudaStream(const tcCudaStream&) = delete;
    tcCudaStream& operator=(const tcCudaStream&) = delete;
    tcCudaStream(tcCudaStream&&) = delete;

@@ -27,7 +27,7 @@ public:
    virtual ~tcCudaBuffer();
 
    /// Checks if there's a pinned memory buffer
-   bool HasPinned(void);
+   bool HasPinned(void) const;
 
    /// Gets the device pointer
    tcType * DeviceBuffer(void);
@@ -60,10 +60,10 @@ public:
    void CopyDeviceToDevice(tcCudaBuffer & arcTargetBuffer, cudaStream_t ahStrm);
 
    /// Gets the size in number of items
-   int NumItems(void);
+   int NumItems(void) const;
 
    /// Gets the size in number of bytes
-   int SizeBytes(void);
+   int SizeBytes(void) const;
 
    // delete copy/move (rule of 5)
    // TODO: Implement the move operator (useful for copy-ellision, etc.)
@@ -74,10 +74,10 @@ public:
 
 private:
    /// Helper method to throw exception if pinned memory is not allocated
-   void ThrowIfNoPinned(void);
+   void ThrowIfNoPinned(void) const;
 
    /// Helper method to throw exception if given items exceed our number of items
-   void ThrowIfItemsExceeded(int anGivenItems);
+   void ThrowIfItemsExceeded(int anGivenItems) const;
 
    /// GPU Buffer
    tcType * mpcDeviceBuf = nullptr;
@@ -139,7 +139,7 @@ tcCudaBuffer<tcType>::~tcCudaBuffer()
 
 // *************************************************************************************************
 template<class tcType>
-bool tcCudaBuffer<tcType>::HasPinned(void)
+bool tcCudaBuffer<tcType>::HasPinned(void) const
 {
    return mpcPinnedBuf != nullptr;
 }
@@ -248,21 +248,21 @@ void tcCudaBuffer<tcType>::CopyDeviceToDevice(tcCudaBuffer & arcTargetBuffer, cu
 
 // *************************************************************************************************
 template<class tcType>
-int tcCudaBuffer<tcType>::NumItems(void)
+int tcCudaBuffer<tcType>::NumItems(void) const
 {
    return mnNumItems;
 }
 
 // *************************************************************************************************
 template<class tcType>
-int tcCudaBuffer<tcType>::SizeBytes(void)
+int tcCudaBuffer<tcType>::SizeBytes(void) const
 {
    return NumItems() * sizeof(tcType);
 }
 
 // *************************************************************************************************
 template<class tcType>
-void tcCudaBuffer<tcType>::ThrowIfNoPinned(void)
+void tcCudaBuffer<tcType>::ThrowIfNoPinned(void) const
 {
    if(!HasPinned())
    {
@@ -272,7 +272,7 @@ void tcCudaBuffer<tcType>::ThrowIfNoPinned(void)
 
 // *************************************************************************************************
 template<class tcType>
-void tcCudaBuffer<tcType>::ThrowIfItemsExceeded(int anGivenItems)
+void tcCudaBuffer<tcType>::ThrowIfItemsExceeded(int anGivenItems) const
 {
    if(anGivenItems > mnNumItems)
    {
