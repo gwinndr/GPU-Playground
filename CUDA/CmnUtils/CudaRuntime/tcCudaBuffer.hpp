@@ -35,10 +35,10 @@ public:
    /// Gets the device pointer (const version)
    const tcType * DeviceBuffer(void) const;
 
-   /// Gets the pinned pointer (can be null)
+   /// Gets the pinned pointer
    tcType * PinnedBuffer(void);
 
-   /// Gets the pinned pointer (can be null, const version)
+   /// Gets the pinned pointer (const version)
    const tcType * PinnedBuffer(void) const;
 
    /// Resets device buffer (memsets to 0) using the given stream
