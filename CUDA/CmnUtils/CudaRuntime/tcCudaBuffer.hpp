@@ -26,6 +26,14 @@ public:
    /// Destroys allocated buffers
    virtual ~tcCudaBuffer();
 
+   /// Moves data (constructor)
+   /// NOTE: Usage of moved object past this point is undefined
+   tcCudaBuffer(tcCudaBuffer&& arrcOther);
+
+   /// Moves data (equal operator), will delete existing data as well (if it exists)
+   /// NOTE: Usage of moved object past this point is undefined
+   tcCudaBuffer& operator=(tcCudaBuffer&& arrcOther);
+
    /// Checks if there's a pinned memory buffer
    bool HasPinned(void) const;
 
@@ -65,14 +73,17 @@ public:
    /// Gets the size in number of bytes
    int SizeBytes(void) const;
 
-   // delete copy/move (rule of 5)
-   // TODO: Implement the move operator (useful for copy-ellision, etc.)
+   // delete copy
    tcCudaBuffer(const tcCudaBuffer&) = delete;
    tcCudaBuffer& operator=(const tcCudaBuffer&) = delete;
-   tcCudaBuffer(tcCudaBuffer&&) = delete;
-   tcCudaBuffer& operator=(tcCudaBuffer&&) = delete;
 
 private:
+   /// Helper method to do actual moving of data when the move operator is used
+   void MoveObject(tcCudaBuffer& arcOther);
+
+   /// Helper method to free resources and reset the class
+   void FreeResources(void);
+
    /// Helper method to throw exception if pinned memory is not allocated
    void ThrowIfNoPinned(void) const;
 
@@ -121,11 +132,56 @@ tcCudaBuffer<tcType>::tcCudaBuffer(int anNumberOfItems, bool abAllocPinned)
 template<class tcType>
 tcCudaBuffer<tcType>::~tcCudaBuffer()
 {
-   // Deallocate GPU memory
-   CheckError(
-      cudaFree(mpcDeviceBuf),
-      __FILE__, __LINE__
-   );
+   FreeResources();
+}
+
+// *************************************************************************************************
+template<class tcType>
+tcCudaBuffer<tcType>::tcCudaBuffer(tcCudaBuffer&& arrcOther)
+{
+   MoveObject(arrcOther);
+}
+
+// *************************************************************************************************
+template<class tcType>
+tcCudaBuffer<tcType>& tcCudaBuffer<tcType>::operator=(tcCudaBuffer&& arrcOther)
+{
+   if (this != &arrcOther)
+   {
+      FreeResources();
+      MoveObject(arrcOther);
+   }
+   return *this;
+}
+
+// *************************************************************************************************
+template<class tcType>
+void tcCudaBuffer<tcType>::MoveObject(tcCudaBuffer& arcOther)
+{
+   // Move to this class
+   mpcDeviceBuf = arcOther.mpcDeviceBuf;
+   mpcPinnedBuf = arcOther.mpcPinnedBuf;
+   mnNumItems = arcOther.mnNumItems;
+
+   // Reset state of the other object
+   arcOther.mpcDeviceBuf = nullptr;
+   arcOther.mpcPinnedBuf = nullptr;
+   arcOther.mnNumItems = 0;
+}
+
+// *************************************************************************************************
+template<class tcType>
+void tcCudaBuffer<tcType>::FreeResources(void)
+{
+   // Deallocate GPU memory if allocated (could have been moved)
+   if(mpcDeviceBuf != nullptr)
+   {
+      CheckError(
+         cudaFree(mpcDeviceBuf),
+         __FILE__, __LINE__
+      );
+      mpcDeviceBuf = nullptr;
+   }
 
    // Deallocate Pinned memory if allocated
    if(mpcPinnedBuf != nullptr)
@@ -134,7 +190,10 @@ tcCudaBuffer<tcType>::~tcCudaBuffer()
          cudaFreeHost(mpcPinnedBuf),
          __FILE__, __LINE__
       );
+      mpcPinnedBuf = nullptr;
    }
+
+   mnNumItems = 0;
 }
 
 // *************************************************************************************************

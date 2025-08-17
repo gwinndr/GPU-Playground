@@ -45,24 +45,13 @@ int main()
    // Create stream for all operations
    CudaRuntime::tcCudaStream lcStrm;
 
-   // Generate uniform random values for A, B, and C
-   std::vector<float> lcAVec = 
-      SetupAndVerify::RandomVectorRealUniform<float>(1, 100, pnNumElems);
-   std::vector<float> lcBVec = 
-      SetupAndVerify::RandomVectorRealUniform<float>(1, 100, pnNumElems);
-   std::vector<float> lcCVec = 
-      SetupAndVerify::RandomVectorRealUniform<float>(1, 100, pnNumElems);
-
    // Create CUDA buffers out of A, B, and C random values
-   CudaRuntime::tcCudaBuffer<float> lcA(pnNumElems, true);
-   CudaRuntime::tcCudaBuffer<float> lcB(pnNumElems, true);
-   CudaRuntime::tcCudaBuffer<float> lcC(pnNumElems, true);
-   lcA.CopyArrayToPinned(lcAVec.data(), lcAVec.size());
-   lcB.CopyArrayToPinned(lcBVec.data(), lcBVec.size());
-   lcC.CopyArrayToPinned(lcCVec.data(), lcCVec.size());
-   lcA.CopyPinnedToDevice(lcStrm.Stream());
-   lcB.CopyPinnedToDevice(lcStrm.Stream());
-   lcC.CopyPinnedToDevice(lcStrm.Stream());
+   CudaRuntime::tcCudaBuffer<float> lcA = 
+      SetupAndVerify::RandomCudaRealUniform<float>(1, 100, pnNumElems, lcStrm.Stream());
+   CudaRuntime::tcCudaBuffer<float> lcB = 
+      SetupAndVerify::RandomCudaRealUniform<float>(1, 100, pnNumElems, lcStrm.Stream());
+   CudaRuntime::tcCudaBuffer<float> lcC = 
+      SetupAndVerify::RandomCudaRealUniform<float>(1, 100, pnNumElems, lcStrm.Stream());
 
    // Create output device buffer and CPU output vector
    CudaRuntime::tcCudaBuffer<float> lcResultDevice(pnNumElems, true);

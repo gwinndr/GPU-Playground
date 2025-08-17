@@ -21,21 +21,33 @@ public:
    /// Destroys the CUDA stream
    virtual ~tcCudaStream();
 
+   /// Moves data (constructor)
+   /// NOTE: Usage of moved object past this point is undefined
+   tcCudaStream(tcCudaStream&& arrcOther);
+
+   /// Moves data (equal operator), will delete existing data as well (if it exists)
+   /// NOTE: Usage of moved object past this point is undefined
+   tcCudaStream& operator=(tcCudaStream&& arrcOther);
+
    /// Gets the allocated CUDA stream
    cudaStream_t Stream(void);
 
    /// Blocks until the stream completes all work
    void Sync(void);
 
-   // delete copy/move (rule of 5)
-   // TODO: Implement the move operator (useful for copy-ellision, etc.)
+   // delete copy
    tcCudaStream(const tcCudaStream&) = delete;
    tcCudaStream& operator=(const tcCudaStream&) = delete;
-   tcCudaStream(tcCudaStream&&) = delete;
-   tcCudaStream& operator=(tcCudaStream&&) = delete;
 
 private:
-   cudaStream_t mhStrm;
+   /// Helper method to do actual moving of data when the move operator is used
+   void MoveObject(tcCudaStream& arcOther);
+
+   /// Helper method to free resources and reset the class
+   void FreeResources(void);
+
+   /// CUDA stream
+   cudaStream_t mhStrm = nullptr;
 };
 
 // *************************************************************************************************
@@ -50,10 +62,43 @@ tcCudaStream::tcCudaStream(unsigned anFlags)
 // *************************************************************************************************
 tcCudaStream::~tcCudaStream()
 {
-   CheckError(
-      cudaStreamDestroy(mhStrm),
-      __FILE__, __LINE__
-   );
+   
+}
+
+// *************************************************************************************************
+tcCudaStream::tcCudaStream(tcCudaStream&& arrcOther)
+{
+   MoveObject(arrcOther);
+}
+
+// *************************************************************************************************
+tcCudaStream& tcCudaStream::operator=(tcCudaStream&& arrcOther)
+{
+   if (this != &arrcOther)
+   {
+      FreeResources();
+      MoveObject(arrcOther);
+   }
+   return *this;
+}
+
+// *************************************************************************************************
+void tcCudaStream::MoveObject(tcCudaStream& arcOther)
+{
+   mhStrm = arcOther.mhStrm;
+   arcOther.mhStrm = nullptr;
+}
+// *************************************************************************************************
+void tcCudaStream::FreeResources(void)
+{
+   if(mhStrm != nullptr)
+   {
+      CheckError(
+         cudaStreamDestroy(mhStrm),
+         __FILE__, __LINE__
+      );
+      mhStrm = nullptr;
+   }
 }
 
 // *************************************************************************************************

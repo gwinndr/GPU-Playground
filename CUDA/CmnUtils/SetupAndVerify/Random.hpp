@@ -1,6 +1,9 @@
 #ifndef Random_hpp
 #define Random_hpp
 
+#include <CmnUtils/CudaRuntime/tcCudaBuffer.hpp>
+
+#include <cuda_runtime.h>
 #include <random>
 #include <optional>
 #include <chrono>
@@ -33,6 +36,24 @@ std::vector<trPrecision> RandomVectorRealUniform(
    }
 
    return lcRandomNums;
+}
+
+/// Creates a uniformly random GPU buffer and starts the copy from pinned to device using the
+/// provided CUDA stream
+template<typename trPrecision>
+CudaRuntime::tcCudaBuffer<trPrecision> RandomCudaRealUniform(
+   trPrecision arStart, trPrecision arEnd, 
+   int anNumElems, cudaStream_t ahStrm,
+   std::optional<long long> anOptSeed=std::nullopt)
+{
+   std::vector<trPrecision> lcRandomNums = RandomVectorRealUniform(
+      arStart, arEnd, anNumElems, anOptSeed);
+   
+   CudaRuntime::tcCudaBuffer<trPrecision> lcCudaBuf(anNumElems, true);
+   lcCudaBuf.CopyArrayToPinned(lcRandomNums.data(), lcRandomNums.size());
+   lcCudaBuf.CopyPinnedToDevice(ahStrm);
+
+   return lcCudaBuf;
 }
 
 }
