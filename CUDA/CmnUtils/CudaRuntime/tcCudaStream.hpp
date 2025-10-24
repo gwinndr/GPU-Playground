@@ -27,7 +27,7 @@ public:
 
    /// Moves data (equal operator), will delete existing data as well (if it exists)
    /// NOTE: Usage of moved object past this point is undefined
-   tcCudaStream& operator=(tcCudaStream&& arrcOther);
+   virtual tcCudaStream& operator=(tcCudaStream&& arrcOther);
 
    /// Gets the allocated CUDA stream
    cudaStream_t Stream(void);

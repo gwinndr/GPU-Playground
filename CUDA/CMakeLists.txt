@@ -30,4 +30,5 @@ include_directories(
 )
 
 # Subdirectories
+add_subdirectory(CmnUtils/CufftPlans)
 add_subdirectory(SimpleFma)

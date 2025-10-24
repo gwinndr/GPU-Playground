@@ -3,8 +3,8 @@
 
 #include <CmnUtils/CudaRuntime/tcCudaBuffer.hpp>
 #include <CmnUtils/CudaRuntime/tcCudaStream.hpp>
-#include <CmnUtils/SetupAndVerify/VerifyResults.hpp>
-#include <CmnUtils/SetupAndVerify/Random.hpp>
+#include <CmnUtils/Utils/VerifyResults.hpp>
+#include <CmnUtils/Utils/Random.hpp>
 
 #include <iostream>
 

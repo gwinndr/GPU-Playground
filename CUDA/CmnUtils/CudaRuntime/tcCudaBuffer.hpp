@@ -32,7 +32,7 @@ public:
 
    /// Moves data (equal operator), will delete existing data as well (if it exists)
    /// NOTE: Usage of moved object past this point is undefined
-   tcCudaBuffer& operator=(tcCudaBuffer&& arrcOther);
+   virtual tcCudaBuffer& operator=(tcCudaBuffer&& arrcOther);
 
    /// Checks if there's a pinned memory buffer
    bool HasPinned(void) const;
